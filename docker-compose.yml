@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n-byteplus-dev
+    restart: unless-stopped
+    ports:
+      - "5679:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=development
+      - N8N_LOG_LEVEL=debug
+      # Disable secure cookie for local development
+      - N8N_SECURE_COOKIE=false
+      # Custom nodes directory
+      - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom
+      - GENERIC_TIMEZONE=Asia/Singapore
+    volumes:
+      # Persist n8n data
+      - n8n_data:/home/node/.n8n
+      # Mount the custom node for development
+      - ./dist:/home/node/.n8n/custom/n8n-nodes-byteplus/dist:ro
+      - ./package.json:/home/node/.n8n/custom/n8n-nodes-byteplus/package.json:ro
+
+volumes:
+  n8n_data:

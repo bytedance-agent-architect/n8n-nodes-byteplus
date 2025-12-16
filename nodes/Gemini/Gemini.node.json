@@ -1,0 +1,22 @@
+{
+	"node": "n8n-nodes-byteplus.gemini",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["AI", "Miscellaneous"],
+	"resources": {
+		"primaryDocumentation": [
+			{
+				"url": "https://ai.google.dev/docs"
+			}
+		],
+		"credentialDocumentation": [
+			{
+				"url": "https://ai.google.dev/tutorials/setup"
+			}
+		]
+	},
+	"alias": ["gemini", "google", "ai", "llm", "vision", "multimodal"],
+	"subcategories": {
+		"AI": ["Agents", "Miscellaneous"]
+	}
+}
