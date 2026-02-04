@@ -51,12 +51,14 @@
     "credentials": [
       "dist/credentials/BytePlusApi.credentials.js",
       "dist/credentials/GeminiApi.credentials.js",
-      "dist/credentials/AwsBedrockApi.credentials.js"
+      "dist/credentials/AwsBedrockApi.credentials.js",
+      "dist/credentials/TikTokOAuth2Api.credentials.js"
     ],
     "nodes": [
       "dist/nodes/BytePlus/BytePlus.node.js",
       "dist/nodes/Gemini/Gemini.node.js",
-      "dist/nodes/AwsBedrock/AwsBedrock.node.js"
+      "dist/nodes/AwsBedrock/AwsBedrock.node.js",
+      "dist/nodes/TikTok/TikTok.node.js"
     ]
   },
   "devDependencies": {

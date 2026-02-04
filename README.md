@@ -4,7 +4,8 @@ This is an n8n community node package providing access to multiple AI services:
 
 | Node | Services |
 |------|----------|
-| **BytePlus** | Image Generation (Seedream), Video Generation (Seedance), TikTok Publishing |
+| **BytePlus** | Image Generation (Seedream), Video Generation (Seedance) |
+| **TikTok** | Video Upload to TikTok |
 | **Gemini** | Text Generation, Image Analysis (Vision) |
 | **AWS Bedrock** | Text Generation (Claude, Nova, Llama, Mistral) |
 
@@ -86,15 +87,60 @@ Generate text responses using Seed LLM.
 | Prompt | Yes | Question or prompt text |
 | Model | No | Model ID |
 
-#### Sharing: Publish to TikTok
-Publish videos to TikTok. **Note: Placeholder implementation.**
+---
+
+## TikTok Node
+
+Upload videos to TikTok directly from your n8n workflows.
+
+### Credentials
+
+See [TikTok Setup Guide](docs/TIKTOK_SETUP.md) for detailed instructions.
+
+**Quick Setup:**
+1. Create app at [TikTok Developer Portal](https://developers.tiktok.com)
+2. Add **Login Kit** and **Content Posting API** products
+3. Run `./get-tiktok-token.sh` to get OAuth tokens
+4. In n8n, create **TikTok API** credential with your tokens
+
+### Operations
+
+#### Video: Upload Video
+Upload videos to TikTok.
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
-| Video URL | Yes | URL of video to publish |
-| Caption | No | Caption text for the post |
-| Hashtags | No | Comma-separated hashtags |
-| Privacy Level | No | public, friends, or private |
+| Video Source | Yes | URL or Binary Data |
+| Video URL | Yes* | Public URL of video (*if source is URL) |
+| Binary Property | Yes* | Binary property name (*if source is Binary) |
+| Title | Yes | Video title/caption (max 2200 chars) |
+| Privacy Level | No | Public, Friends Only, or Private |
+| Disable Comments | No | Disable comments on video |
+| Disable Duet | No | Disable duets |
+| Disable Stitch | No | Disable stitches |
+
+**Example Output:**
+```json
+{
+  "success": true,
+  "publishId": "v_inbox_file~v2.123456789",
+  "message": "Video uploaded to TikTok",
+  "uploadStatus": 201,
+  "processingStatus": {
+    "data": {
+      "status": "PROCESSING_UPLOAD",
+      "uploaded_bytes": 7571947
+    }
+  }
+}
+```
+
+### Important Notes
+
+- **Unaudited apps**: Videos go to user's TikTok notifications (must manually post)
+- **Audited apps**: Videos post directly to profile
+- **Rate limits**: ~5-15 videos per day per user
+- **Token refresh**: Tokens auto-refresh; refresh token valid for 1 year
 
 ---
 
@@ -227,7 +273,8 @@ n8n-nodes-byteplus/
 ├── credentials/
 │   ├── BytePlusApi.credentials.ts
 │   ├── GeminiApi.credentials.ts
-│   └── AwsBedrockApi.credentials.ts
+│   ├── AwsBedrockApi.credentials.ts
+│   └── TikTokOAuth2Api.credentials.ts
 ├── nodes/
 │   ├── BytePlus/
 │   │   ├── BytePlus.node.ts
@@ -235,8 +282,12 @@ n8n-nodes-byteplus/
 │   │   └── actions/
 │   │       ├── Image/
 │   │       ├── Video/
-│   │       ├── Text/
-│   │       └── Sharing/
+│   │       └── Text/
+│   ├── TikTok/
+│   │   ├── TikTok.node.ts
+│   │   ├── tiktok.svg
+│   │   └── actions/
+│   │       └── Video/
 │   ├── Gemini/
 │   │   ├── Gemini.node.ts
 │   │   ├── gemini.svg
@@ -269,6 +320,7 @@ The credential files only define the **structure** (field names, types), not act
 |------|---------|----------|
 | BytePlus | Image Generation | `/api/v3/images/generations` |
 | BytePlus | Video Generation | `/api/v3/contents/generations/tasks` |
+| TikTok | Video Upload | `open.tiktokapis.com/v2/post/publish/inbox/video/init/` |
 | Gemini | Text/Vision | `generativelanguage.googleapis.com/v1beta/models/` |
 | AWS Bedrock | Text Generation | `bedrock-runtime.{region}.amazonaws.com/model/{model}/invoke` |
 
@@ -279,6 +331,8 @@ MIT
 ## Links
 
 - [BytePlus Documentation](https://www.byteplus.com/en/docs)
+- [TikTok Developer Portal](https://developers.tiktok.com)
+- [TikTok Setup Guide](docs/TIKTOK_SETUP.md)
 - [Google AI Studio](https://aistudio.google.com/)
 - [AWS Bedrock Documentation](https://docs.aws.amazon.com/bedrock/)
 - [n8n Community Nodes](https://docs.n8n.io/integrations/community-nodes/)
