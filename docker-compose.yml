@@ -1,0 +1,39 @@
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n-byteplus-dev
+    restart: unless-stopped
+    ports:
+      # Bind to localhost by default to avoid exposing n8n on your LAN.
+      # If you need LAN access, change this back to "5679:5678".
+      - "127.0.0.1:5679:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      # Set these to your public URL if using a tunnel (e.g., Cloudflare Tunnel, ngrok)
+      # - N8N_EDITOR_BASE_URL=https://your-tunnel-url.example.com
+      # - WEBHOOK_URL=https://your-tunnel-url.example.com
+      - NODE_ENV=development
+      - N8N_LOG_LEVEL=${N8N_LOG_LEVEL:-info}
+      # Disable secure cookie for local development
+      - N8N_SECURE_COOKIE=${N8N_SECURE_COOKIE:-false}
+      # Custom nodes directory
+      - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom
+      - GENERIC_TIMEZONE=Asia/Singapore
+      # Dev-only: disable TLS verification (insecure; MITM risk).
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+      # If you see "unable to get local issuer certificate", you're likely behind a TLS-inspecting proxy.
+      # Export the proxy/root CA as PEM, mount it, and set:
+      # - NODE_EXTRA_CA_CERTS=/etc/ssl/certs/corporate-ca.pem
+    volumes:
+      # Persist n8n data
+      - n8n_data:/home/node/.n8n
+      # Mount the custom node for development
+      - ./dist:/home/node/.n8n/custom/n8n-nodes-byteplus/dist:ro
+      - ./package.json:/home/node/.n8n/custom/n8n-nodes-byteplus/package.json:ro
+      # Optional corporate CA mount (see NODE_EXTRA_CA_CERTS above)
+      # - ./certs/corporate-ca.pem:/etc/ssl/certs/corporate-ca.pem:ro
+
+volumes:
+  n8n_data:

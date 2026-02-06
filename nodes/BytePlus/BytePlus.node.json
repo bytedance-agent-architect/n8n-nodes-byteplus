@@ -1,0 +1,22 @@
+{
+	"node": "n8n-nodes-byteplus.bytePlus",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["AI", "Marketing & Content"],
+	"resources": {
+		"primaryDocumentation": [
+			{
+				"url": "https://docs.byteplus.com/en/docs"
+			}
+		],
+		"credentialDocumentation": [
+			{
+				"url": "https://docs.byteplus.com/en/docs"
+			}
+		]
+	},
+	"alias": ["byteplus", "seedream", "seedance", "image", "video", "ai"],
+	"subcategories": {
+		"AI": ["Agents", "Miscellaneous"]
+	}
+}
