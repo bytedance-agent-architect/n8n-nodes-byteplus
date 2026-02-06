@@ -8,6 +8,25 @@ import type {
 
 export const description: INodeProperties[] = [
 	{
+		displayName: 'Model',
+		name: 'model',
+		type: 'options',
+		options: [
+			{ name: 'Seedream 4.5 (Default)', value: 'seedream-4-5-251128' },
+			{ name: 'Seedream 4.0', value: 'seedream-4-0-250828' },
+			{ name: 'Seedream 3.0', value: 'seedream-3-0' },
+			{ name: 'Custom (Enter Below)', value: 'custom' },
+		],
+		default: 'seedream-4-5-251128',
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['generateImage'],
+			},
+		},
+		description: 'Model to use for image generation',
+	},
+	{
 		displayName: 'Prompt',
 		name: 'prompt',
 		type: 'string',
@@ -25,22 +44,17 @@ export const description: INodeProperties[] = [
 		description: 'Text description of the image to generate',
 	},
 	{
-		displayName: 'Model',
-		name: 'model',
-		type: 'options',
-		options: [
-			{ name: 'Seedream 4.0 (Default)', value: 'seedream-4-0-250828' },
-			{ name: 'Seedream 3.0', value: 'seedream-3-0' },
-			{ name: 'Custom (Enter Below)', value: 'custom' },
-		],
-		default: 'seedream-4-0-250828',
+		displayName: 'Input Image (Optional for Editing)',
+		name: 'image',
+		type: 'string',
+		default: '',
 		displayOptions: {
 			show: {
 				resource: ['image'],
 				operation: ['generateImage'],
 			},
 		},
-		description: 'Model to use for image generation',
+		description: 'Optional input image URL or base64 string for image-to-image generation',
 	},
 	{
 		displayName: 'Custom Model ID',
@@ -57,6 +71,44 @@ export const description: INodeProperties[] = [
 		description: 'Enter a custom model ID',
 	},
 	{
+		displayName: 'Size',
+		name: 'size',
+		type: 'options',
+		options: [
+			{ name: '2K', value: '2K' },
+			{ name: '4K', value: '4K' },
+			{ name: '2048x2048 (1:1)', value: '2048x2048' },
+			{ name: '2304x1728 (4:3)', value: '2304x1728' },
+			{ name: '1728x2304 (3:4)', value: '1728x2304' },
+			{ name: '2560x1440 (16:9)', value: '2560x1440' },
+			{ name: '1440x2560 (9:16)', value: '1440x2560' },
+			{ name: '2496x1664 (3:2)', value: '2496x1664' },
+			{ name: '1664x2496 (2:3)', value: '1664x2496' },
+			{ name: '3024x1296 (21:9)', value: '3024x1296' },
+		],
+		default: '2K',
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['generateImage'],
+			},
+		},
+		description: 'Size of the generated image',
+	},
+	{
+		displayName: 'Watermark',
+		name: 'watermark',
+		type: 'boolean',
+		default: true,
+		displayOptions: {
+			show: {
+				resource: ['image'],
+				operation: ['generateImage'],
+			},
+		},
+		description: 'Whether to add a watermark to the generated image',
+	},
+	{
 		displayName: 'Additional Options',
 		name: 'additionalOptions',
 		type: 'collection',
@@ -69,26 +121,6 @@ export const description: INodeProperties[] = [
 			},
 		},
 		options: [
-			{
-				displayName: 'Size',
-				name: 'size',
-				type: 'options',
-				options: [
-					{ name: '2K (2048x2048)', value: '2K' },
-					{ name: '1080p (1920x1080)', value: '1080p' },
-					{ name: '720p (1280x720)', value: '720p' },
-					{ name: 'Square (1024x1024)', value: '1024x1024' },
-				],
-				default: '2K',
-				description: 'Size of the generated image',
-			},
-			{
-				displayName: 'Watermark',
-				name: 'watermark',
-				type: 'boolean',
-				default: true,
-				description: 'Whether to add a watermark to the generated image',
-			},
 			{
 				displayName: 'Response Format',
 				name: 'responseFormat',
@@ -110,8 +142,11 @@ export async function execute(
 ): Promise<INodeExecutionData> {
 	const credentials = await this.getCredentials('bytePlusApi');
 	const prompt = this.getNodeParameter('prompt', index) as string;
+	const inputImage = this.getNodeParameter('image', index, '') as string;
 	const modelSelection = this.getNodeParameter('model', index) as string;
 	const customModel = this.getNodeParameter('customModel', index, '') as string;
+	const size = this.getNodeParameter('size', index) as string;
+	const watermark = this.getNodeParameter('watermark', index) as boolean;
 	const additionalOptions = this.getNodeParameter('additionalOptions', index, {}) as IDataObject;
 
 	// Resolve model: use custom if selected, otherwise use dropdown value
@@ -124,10 +159,13 @@ export async function execute(
 		model,
 		prompt,
 		response_format: additionalOptions.responseFormat || 'url',
-		size: additionalOptions.size || '2K',
+		size: size || '2K',
 		stream: false,
-		watermark: additionalOptions.watermark !== false,
+		watermark,
 	};
+	if (inputImage) {
+		body.image = inputImage;
+	}
 
 	const options = {
 		method: 'POST' as IHttpRequestMethods,

@@ -7,23 +7,6 @@ import type {
 
 export const description: INodeProperties[] = [
 	{
-		displayName: 'Prompt',
-		name: 'prompt',
-		type: 'string',
-		typeOptions: {
-			rows: 4,
-		},
-		default: '',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['text'],
-				operation: ['answerQuestion'],
-			},
-		},
-		description: 'The question or prompt to send to the LLM',
-	},
-	{
 		displayName: 'Model',
 		name: 'model',
 		type: 'options',
@@ -40,6 +23,23 @@ export const description: INodeProperties[] = [
 			},
 		},
 		description: 'Model to use for text generation',
+	},
+	{
+		displayName: 'Prompt',
+		name: 'prompt',
+		type: 'string',
+		typeOptions: {
+			rows: 4,
+		},
+		default: '',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['text'],
+				operation: ['answerQuestion'],
+			},
+		},
+		description: 'The question or prompt to send to the LLM',
 	},
 	{
 		displayName: 'Custom Model ID',

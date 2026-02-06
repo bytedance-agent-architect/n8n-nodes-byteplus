@@ -1,34 +1,26 @@
 {
   "name": "n8n-nodes-byteplus",
   "version": "0.1.0",
-  "description": "n8n community nodes for BytePlus, Gemini, and AWS Bedrock AI services (Image Generation, Video Generation, Text Generation, Vision)",
+  "description": "n8n community node for BytePlus AI services (Image Generation, Video Generation, TikTok Publishing)",
   "keywords": [
     "n8n-community-node-package",
     "n8n",
     "byteplus",
-    "gemini",
-    "google",
-    "aws",
-    "bedrock",
-    "claude",
-    "nova",
     "ai",
     "image-generation",
     "video-generation",
-    "text-generation",
-    "vision",
     "seedream",
     "seedance",
     "tiktok"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://byteplus.com/",
   "author": {
     "name": "BytePlus"
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/bytedance-agent-architect/creative-agent-n8n"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -38,8 +30,8 @@
     "build": "tsc && gulp build:icons",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
-    "lint": "eslint nodes credentials package.json",
-    "lintfix": "eslint nodes credentials package.json --fix",
+    "lint": "eslint \"nodes/**/*.ts\" \"credentials/**/*.ts\"",
+    "lintfix": "eslint \"nodes/**/*.ts\" \"credentials/**/*.ts\" --fix",
     "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit"
   },
@@ -49,20 +41,17 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/BytePlusApi.credentials.js",
-      "dist/credentials/GeminiApi.credentials.js",
-      "dist/credentials/AwsBedrockApi.credentials.js"
+      "dist/credentials/BytePlusApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/BytePlus/BytePlus.node.js",
-      "dist/nodes/Gemini/Gemini.node.js",
-      "dist/nodes/AwsBedrock/AwsBedrock.node.js"
+      "dist/nodes/BytePlus/BytePlus.node.js"
     ]
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.56.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.6",
     "gulp": "^4.0.2",
     "n8n-workflow": "^1.0.0",
     "prettier": "^3.2.0",

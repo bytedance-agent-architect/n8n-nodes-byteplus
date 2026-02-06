@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import * as answerQuestion from './answerQuestion.operation';
+import * as uploadVideo from './uploadVideo.operation';
 
 export const description: INodeProperties[] = [
 	{
@@ -9,31 +9,31 @@ export const description: INodeProperties[] = [
 		noDataExpression: true,
 		displayOptions: {
 			show: {
-				resource: ['text'],
+				resource: ['video'],
 			},
 		},
 		options: [
 			{
-				name: 'Answer Question',
-				value: 'answerQuestion',
-				description: 'Send message to a model',
-				action: 'Message a model',
+				name: 'Upload Video',
+				value: 'uploadVideo',
+				description: 'Upload a video to TikTok',
+				action: 'Upload video to TikTok',
 			},
 		],
-		default: 'answerQuestion',
+		default: 'uploadVideo',
 	},
-	...answerQuestion.description,
+	...uploadVideo.description,
 ];
 
-export { answerQuestion };
+export { uploadVideo };
 
 export async function execute(
 	this: import('n8n-workflow').IExecuteFunctions,
 	index: number,
 	operation: string,
 ) {
-	if (operation === 'answerQuestion') {
-		return await answerQuestion.execute.call(this, index);
+	if (operation === 'uploadVideo') {
+		return await uploadVideo.execute.call(this, index);
 	}
 	throw new Error(`Unknown operation: ${operation}`);
 }

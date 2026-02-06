@@ -5,28 +5,25 @@ import type {
 	INodeTypeDescription,
 } from 'n8n-workflow';
 
-import * as image from './actions/Image';
 import * as video from './actions/Video';
-import * as text from './actions/Text';
 
-
-export class BytePlus implements INodeType {
+export class TikTok implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'BytePlus',
-		name: 'bytePlus',
-		icon: 'file:byteplus.svg',
+		displayName: 'TikTok',
+		name: 'tikTok',
+		icon: 'file:tiktok.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'BytePlus AI Services - Image Generation, Video Generation, and Text Generation',
+		description: 'Upload videos to TikTok',
 		defaults: {
-			name: 'BytePlus',
+			name: 'TikTok',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
 		credentials: [
 			{
-				name: 'bytePlusApi',
+				name: 'tiktokOAuth2Api',
 				required: true,
 			},
 		],
@@ -38,28 +35,13 @@ export class BytePlus implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						name: 'Image',
-						value: 'image',
-						description: 'Generate an image',
-					},
-					{
 						name: 'Video',
 						value: 'video',
-						description: 'Generate a video',
-					},
-					{
-						name: 'Text',
-						value: 'text',
-						description: 'Message a model',
+						description: 'Upload videos to TikTok',
 					},
 				],
-				default: 'text',
+				default: 'video',
 			},
-			// Image operations
-			...image.description,
-			// Text operations
-			...text.description,
-			// Video operations
 			...video.description,
 		],
 	};
@@ -74,11 +56,7 @@ export class BytePlus implements INodeType {
 			try {
 				let responseData;
 
-				if (resource === 'image') {
-					responseData = await image.execute.call(this, i, operation);
-				} else if (resource === 'text') {
-					responseData = await text.execute.call(this, i, operation);
-				} else if (resource === 'video') {
+				if (resource === 'video') {
 					responseData = await video.execute.call(this, i, operation);
 				}
 
@@ -86,7 +64,6 @@ export class BytePlus implements INodeType {
 					if (Array.isArray(responseData)) {
 						returnData.push(...responseData);
 					} else if (responseData.json !== undefined) {
-						// Already formatted as INodeExecutionData (has json/binary properties)
 						returnData.push(responseData as INodeExecutionData);
 					} else {
 						returnData.push({ json: responseData });

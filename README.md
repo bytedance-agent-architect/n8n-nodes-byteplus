@@ -1,276 +1,194 @@
 # n8n-nodes-byteplus
 
-This is an n8n community node package providing access to multiple AI services:
+**n8n community node for BytePlus AI services** - Image Generation, Video Generation, Text Generation, and TikTok Publishing.
 
-| Node | Services |
-|------|----------|
-| **BytePlus** | Image Generation (Seedream), Video Generation (Seedance), TikTok Publishing |
-| **Gemini** | Text Generation, Image Analysis (Vision) |
-| **AWS Bedrock** | Text Generation (Claude, Nova, Llama, Mistral) |
+## Features
+
+| Service | Capabilities |
+|---------|-------------|
+| **Image Generation** | Generate images using Seedream models (2K, 1080p, 720p, 1024x1024) |
+| **Video Generation** | Create videos from text + reference images using Seedance |
+| **Text Generation** | Generate text responses using Seed LLM |
+| **TikTok Publishing** | Publish videos to TikTok (placeholder implementation) |
 
 ## Installation
 
-### Community Node (Recommended)
+### Option 1: Community Node (Recommended)
 
-1. Go to **Settings > Community Nodes** in n8n
-2. Select **Install**
+1. In your n8n instance, go to **Settings > Community Nodes**
+2. Click **Install**
 3. Enter `n8n-nodes-byteplus`
 4. Agree to the risks and click **Install**
 
-### Manual Installation
+### Option 2: Manual Installation
 
 ```bash
 npm install n8n-nodes-byteplus
 ```
 
----
+## Setup
 
-## BytePlus Node
-
-### Credentials
+### 1. Get BytePlus API Credentials
 
 1. Sign up at [BytePlus](https://www.byteplus.com/)
 2. Navigate to the ARK console
 3. Generate an API key
-4. In n8n, go to **Credentials > New Credential > BytePlus API**
-5. Enter your API key and configure endpoints if needed
 
-### Operations
+### 2. Configure Credentials in n8n
 
-#### Image: Generate Image
-Generate images from text prompts using Seedream. **Images are displayed directly in n8n output panel.**
+1. In n8n, go to **Credentials**
+2. Click **New Credential**
+3. Search for **BytePlus API**
+4. Enter your API key and configure endpoints if needed
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| Prompt | Yes | Text description of the image |
-| Model | No | Seedream 4.0 (default), Seedream 3.0, or Custom |
-| Size | No | 2K, 1080p, 720p, or 1024x1024 |
-| Watermark | No | Add watermark (default: true) |
+## Usage
 
-**Example Output:**
-```json
-{
-  "success": true,
-  "prompt": "A beautiful sunset over mountains",
-  "imageUrl": "https://..."
-}
-```
-Plus binary image data displayed in n8n.
+### Image Generation
 
-#### Video: Generate Video
-Generate videos from text and reference images using Seedance.
+Generate images from text prompts using Seedream models.
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| Prompt | Yes | Text description of the video |
-| Reference Image URL | Yes | Public https:// URL of reference image |
-| Model | No | Seedance 1.0 Lite I2V (default) or Custom |
-| Max Wait Time | No | Polling timeout in seconds (default: 300) |
+**Parameters:**
+- **Prompt** (required): Text description of the image
+- **Model**: Seedream 4.0 (default), Seedream 3.0, or Custom
+- **Size**: 2K, 1080p, 720p, or 1024x1024
+- **Watermark**: Add watermark (default: true)
 
-**Example Output:**
-```json
-{
-  "success": true,
-  "taskId": "task_123",
-  "status": "completed",
-  "videoUrl": "https://...",
-  "elapsedTime": "45.2s"
-}
-```
+**Output:** Images are displayed directly in n8n output panel with download URLs.
 
-#### Text: Answer Question
+### Video Generation
+
+Create videos from text descriptions and reference images using Seedance.
+
+**Parameters:**
+- **Prompt** (required): Text description of the video
+- **Reference Image URL** (required): Public https:// URL of reference image
+- **Model**: Seedance 1.0 Lite I2V (default) or Custom
+- **Max Wait Time**: Polling timeout in seconds (default: 300)
+
+### Text Generation
+
 Generate text responses using Seed LLM.
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| Prompt | Yes | Question or prompt text |
-| Model | No | Model ID |
+**Parameters:**
+- **Prompt** (required): Question or prompt text
+- **Model**: Model ID for specific Seed LLM models
 
-#### Sharing: Publish to TikTok
-Publish videos to TikTok. **Note: Placeholder implementation.**
+### TikTok Publishing
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| Video URL | Yes | URL of video to publish |
-| Caption | No | Caption text for the post |
-| Hashtags | No | Comma-separated hashtags |
-| Privacy Level | No | public, friends, or private |
+Publish videos to TikTok (placeholder implementation).
 
----
+**Parameters:**
+- **Video URL** (required): URL of video to publish
+- **Caption**: Caption text for the post
+- **Hashtags**: Comma-separated hashtags
+- **Privacy Level**: public, friends, or private
 
-## Gemini Node
+## Local Development
 
-### Credentials
+### Prerequisites
 
-1. Go to [Google AI Studio](https://aistudio.google.com/apikey)
-2. Create an API Key
-3. In n8n, go to **Credentials > New Credential > Gemini API**
-4. Enter your API key
+- Node.js >=18.0.0
+- Docker and Docker Compose
 
-### Operations
+### Quick Start
 
-#### Text: Generate Text
-Generate text using Google Gemini models.
-
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| Prompt | Yes | The prompt to send to Gemini |
-| Model | No | Gemini 2.0 Flash (default), 1.5 Flash, or 1.5 Pro |
-| System Instruction | No | System prompt to guide behavior |
-| Temperature | No | Randomness (0-2, default: 1.0) |
-| Max Output Tokens | No | Maximum response length (default: 1024) |
-
-**Example Output:**
-```json
-{
-  "success": true,
-  "prompt": "Explain quantum computing",
-  "model": "gemini-2.0-flash",
-  "generatedText": "Quantum computing is..."
-}
-```
-
-#### Image: Analyze Image
-Analyze images using Gemini Vision.
-
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| Image URL | Yes | URL of image to analyze |
-| Prompt | Yes | Question about the image |
-| Model | No | Gemini model to use |
-
-**Example Output:**
-```json
-{
-  "success": true,
-  "analysisText": "The image shows a cat sitting on a windowsill..."
-}
-```
-
----
-
-## AWS Bedrock Node
-
-### Credentials
-
-1. Go to [AWS IAM Console](https://console.aws.amazon.com/iam/)
-2. Create a user with `AmazonBedrockFullAccess` policy
-3. Generate Access Key (select "Local code" use case)
-4. In n8n, go to **Credentials > New Credential > AWS Bedrock API**
-5. Enter:
-   - Access Key ID
-   - Secret Access Key
-   - Region (e.g., `us-east-1`)
-
-### Operations
-
-#### Text: Generate Text
-Generate text using AWS Bedrock foundation models.
-
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| Prompt | Yes | The prompt to send to the model |
-| Model | No | Amazon Nova Lite (default), Nova Pro, Claude 3.5 Sonnet, Claude 3 Haiku, Llama 3.1, Mistral 7B |
-| System Prompt | No | System instruction to guide behavior |
-| Temperature | No | Randomness (0-1, default: 0.7) |
-| Max Tokens | No | Maximum response length (default: 1024) |
-
-**Supported Models:**
-
-| Provider | Models |
-|----------|--------|
-| Amazon | Nova Lite, Nova Micro, Nova Pro |
-| Anthropic | Claude 3.5 Sonnet, Claude 3 Haiku, Claude 3 Sonnet |
-| Meta | Llama 3.1 8B Instruct, Llama 3.1 70B Instruct |
-| Mistral | Mistral 7B Instruct |
-
-**Example Output:**
-```json
-{
-  "success": true,
-  "prompt": "Summarize this article...",
-  "model": "amazon.nova-lite-v1:0",
-  "generatedText": "The article discusses..."
-}
-```
-
----
-
-## Development
-
-### Local Setup
-
-1. Clone this repository
-2. Install dependencies:
+1. **Clone and install dependencies:**
    ```bash
+   git clone <your-repo-url>
+   cd n8n-nodes-byteplus
    npm install
    ```
-3. Build the node:
+
+2. **Build the node:**
    ```bash
    npm run build
    ```
 
-### Running with Docker
+3. **Start n8n with the custom node:**
+   ```bash
+   docker-compose up
+   ```
 
-Start n8n with the custom nodes:
+4. **Access n8n:**
+   - Open http://localhost:5679
+   - Create your workflow
+   - Add BytePlus node from the nodes panel
+   - Configure your BytePlus API credentials
+
+### Development Commands
 
 ```bash
-docker-compose up
-```
+# Build the node
+npm run build
 
-Access n8n at `http://localhost:5679`
+# Watch mode for development
+npm run dev
+
+# Lint code
+npm run lint
+
+# Fix linting issues
+npm run lintfix
+
+# Format code
+npm run format
+
+# Type checking
+npm run typecheck
+```
 
 ### Project Structure
 
 ```
 n8n-nodes-byteplus/
 ├── credentials/
-│   ├── BytePlusApi.credentials.ts
-│   ├── GeminiApi.credentials.ts
-│   └── AwsBedrockApi.credentials.ts
+│   └── BytePlusApi.credentials.ts    # API credential configuration
 ├── nodes/
-│   ├── BytePlus/
-│   │   ├── BytePlus.node.ts
-│   │   ├── byteplus.svg
-│   │   └── actions/
-│   │       ├── Image/
-│   │       ├── Video/
-│   │       ├── Text/
-│   │       └── Sharing/
-│   ├── Gemini/
-│   │   ├── Gemini.node.ts
-│   │   ├── gemini.svg
-│   │   └── actions/
-│   │       ├── Text/
-│   │       └── Image/
-│   └── AwsBedrock/
-│       ├── AwsBedrock.node.ts
-│       ├── awsbedrock.svg
+│   └── BytePlus/
+│       ├── BytePlus.node.ts          # Main node definition
+│       ├── byteplus.svg              # Node icon
 │       └── actions/
-│           └── Text/
-├── package.json
-├── tsconfig.json
-└── docker-compose.yml
+│           ├── Image/                # Image generation operations
+│           ├── Video/                # Video generation operations
+│           ├── Text/                 # Text generation operations
+│           └── Sharing/              # TikTok publishing operations
+├── dist/                             # Built files (auto-generated)
+├── package.json                      # Dependencies and scripts
+├── tsconfig.json                     # TypeScript configuration
+└── docker-compose.yml               # Development environment
 ```
 
 ## Security
 
-API keys are **not stored in the code**. They are:
-- Entered via n8n UI (Credentials)
-- Encrypted by n8n
-- Stored in n8n's database (Docker volume)
-- Retrieved at runtime by nodes
-
-The credential files only define the **structure** (field names, types), not actual values.
+- **No credentials are hardcoded in this repo** (only field definitions)
+- **Secure your n8n instance before exposing it** (auth + access controls), especially if using tunnels for OAuth redirects
+- **Keep TLS verification enabled** (avoid `NODE_TLS_REJECT_UNAUTHORIZED=0` unless you fully understand the MITM risk)
 
 ## API Reference
 
-| Node | Service | Endpoint |
-|------|---------|----------|
-| BytePlus | Image Generation | `/api/v3/images/generations` |
-| BytePlus | Video Generation | `/api/v3/contents/generations/tasks` |
-| Gemini | Text/Vision | `generativelanguage.googleapis.com/v1beta/models/` |
-| AWS Bedrock | Text Generation | `bedrock-runtime.{region}.amazonaws.com/model/{model}/invoke` |
+| Operation | Endpoint |
+|-----------|----------|
+| Image Generation | `/api/v3/images/generations` |
+| Video Generation | `/api/v3/contents/generations/tasks` |
+| Text Generation | `/api/v3/chat/completions` |
+
+## Troubleshooting
+
+### Common Issues
+
+**Node not appearing in n8n:**
+- Ensure you built the project (`npm run build`)
+- Check docker-compose volumes are mounted correctly
+- Restart the n8n container
+
+**API authentication errors:**
+- Verify your BytePlus API key is correct
+- Check the base URL is set properly
+- Ensure your BytePlus account has necessary permissions
+
+**Build errors:**
+- Run `npm install` to ensure all dependencies are installed
+- Check Node.js version (>=18.0.0 required)
 
 ## License
 
@@ -279,6 +197,5 @@ MIT
 ## Links
 
 - [BytePlus Documentation](https://www.byteplus.com/en/docs)
-- [Google AI Studio](https://aistudio.google.com/)
-- [AWS Bedrock Documentation](https://docs.aws.amazon.com/bedrock/)
+- [BytePlus ARK Console](https://console.byteplus.com/ark)
 - [n8n Community Nodes](https://docs.n8n.io/integrations/community-nodes/)

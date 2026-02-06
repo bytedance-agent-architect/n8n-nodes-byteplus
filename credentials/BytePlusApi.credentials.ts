@@ -8,7 +8,7 @@ import type {
 export class BytePlusApi implements ICredentialType {
 	name = 'bytePlusApi';
 	displayName = 'BytePlus API';
-	documentationUrl = 'https://www.byteplus.com/en/docs';
+	documentationUrl = 'https://docs.byteplus.com/en/docs';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'API Key',
@@ -19,7 +19,7 @@ export class BytePlusApi implements ICredentialType {
 			},
 			default: '',
 			required: true,
-			description: 'Your BytePlus ARK API Key',
+			description: 'Your BytePlus ModelArk API Key',
 		},
 		{
 			displayName: 'Base URL',
