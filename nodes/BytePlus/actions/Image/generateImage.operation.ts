@@ -4,7 +4,9 @@ import type {
   IDataObject,
   IHttpRequestMethods,
   INodeExecutionData,
+  JsonObject,
 } from "n8n-workflow";
+import { NodeApiError } from "n8n-workflow";
 
 function supportsStreamParameter(modelId: string): boolean {
   const match = modelId.match(/^seedream-(\d+)-/);
@@ -189,11 +191,18 @@ export async function execute(
     json: true,
   };
 
-  const response = await this.helpers.httpRequestWithAuthentication.call(
-    this,
-    "bytePlusApi",
-    options,
-  );
+  let response: any;
+  try {
+    response = await this.helpers.httpRequestWithAuthentication.call(
+      this,
+      "bytePlusApi",
+      options,
+    );
+  } catch (error) {
+    throw new NodeApiError(this.getNode(), error as JsonObject, {
+      itemIndex: index,
+    });
+  }
 
   // Extract the image URL from the response
   const imageUrl = response?.data?.[0]?.url || response?.url || null;

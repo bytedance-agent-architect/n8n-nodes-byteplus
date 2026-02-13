@@ -2,7 +2,9 @@ import type {
   IExecuteFunctions,
   INodeProperties,
   IDataObject,
+  JsonObject,
 } from "n8n-workflow";
+import { NodeApiError, NodeOperationError } from "n8n-workflow";
 
 export const description: INodeProperties[] = [
   {
@@ -182,12 +184,19 @@ export async function execute(
     const videoUrl = this.getNodeParameter("videoUrl", index) as string;
 
     // Download the video
-    const videoResponse = await this.helpers.httpRequest({
-      method: "GET",
-      url: videoUrl,
-      encoding: "arraybuffer",
-      returnFullResponse: true,
-    });
+    let videoResponse: any;
+    try {
+      videoResponse = await this.helpers.httpRequest({
+        method: "GET",
+        url: videoUrl,
+        encoding: "arraybuffer",
+        returnFullResponse: true,
+      });
+    } catch (error) {
+      throw new NodeApiError(this.getNode(), error as JsonObject, {
+        itemIndex: index,
+      });
+    }
     videoBuffer = Buffer.from(videoResponse.body as ArrayBuffer);
     const fileSize = videoBuffer.length;
 
@@ -220,25 +229,38 @@ export async function execute(
 
   // Helper function to refresh token
   const refreshAccessToken = async (): Promise<string> => {
-    const refreshResponse = await this.helpers.httpRequest({
-      method: "POST",
-      url: "https://open.tiktokapis.com/v2/oauth/token/",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: `client_key=${clientKey}&client_secret=${clientSecret}&grant_type=refresh_token&refresh_token=${refreshToken}`,
-    });
-    if (refreshResponse.access_token) {
-      return refreshResponse.access_token;
+    let refreshResponse: any;
+    try {
+      refreshResponse = await this.helpers.httpRequest({
+        method: "POST",
+        url: "https://open.tiktokapis.com/v2/oauth/token/",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `client_key=${clientKey}&client_secret=${clientSecret}&grant_type=refresh_token&refresh_token=${refreshToken}`,
+      });
+    } catch (error) {
+      throw new NodeApiError(this.getNode(), error as JsonObject, {
+        itemIndex: index,
+      });
     }
-    throw new Error("Failed to refresh TikTok access token");
+    if (refreshResponse.access_token) {
+      return refreshResponse.access_token as string;
+    }
+    throw new NodeOperationError(
+      this.getNode(),
+      "Failed to refresh TikTok access token",
+      {
+        itemIndex: index,
+      },
+    );
   };
 
   // Try request, refresh token if needed
-  let initResponse;
+  let initResponse: any;
   try {
     // Use inbox endpoint (required for unaudited apps)
-    initResponse = await this.helpers.httpRequest({
+    const initHttpResponse = await this.helpers.httpRequest({
       method: "POST",
       url: `${baseUrl}/v2/post/publish/inbox/video/init/`,
       body: initBody,
@@ -252,33 +274,49 @@ export async function execute(
     });
 
     // Check if token expired
-    if (initResponse.body?.error?.code === "access_token_invalid") {
-      throw new Error("Token expired");
+    if (initHttpResponse.body?.error?.code === "access_token_invalid") {
+      throw new NodeOperationError(this.getNode(), "Token expired", {
+        itemIndex: index,
+      });
     }
 
     // Get actual response body
-    initResponse = initResponse.body || initResponse;
+    initResponse = (initHttpResponse.body || initHttpResponse) as IDataObject;
   } catch (error) {
     // Try refreshing token
     try {
       accessToken = await refreshAccessToken();
-      const retryResponse = await this.helpers.httpRequest({
-        method: "POST",
-        url: `${baseUrl}/v2/post/publish/inbox/video/init/`,
-        body: initBody,
-        json: true,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        returnFullResponse: true,
-        ignoreHttpStatusErrors: true,
-      });
+      let retryResponse: any;
+      try {
+        retryResponse = await this.helpers.httpRequest({
+          method: "POST",
+          url: `${baseUrl}/v2/post/publish/inbox/video/init/`,
+          body: initBody,
+          json: true,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          returnFullResponse: true,
+          ignoreHttpStatusErrors: true,
+        });
+      } catch (retryError) {
+        throw new NodeApiError(this.getNode(), retryError as JsonObject, {
+          itemIndex: index,
+        });
+      }
       initResponse = retryResponse.body || retryResponse;
     } catch (refreshError) {
-      throw new Error(
-        `TikTok API error: ${(error as Error).message}. Refresh also failed: ${(refreshError as Error).message}`,
-      );
+      if (
+        refreshError instanceof NodeApiError ||
+        refreshError instanceof NodeOperationError
+      ) {
+        throw refreshError;
+      }
+      throw new NodeApiError(this.getNode(), refreshError as JsonObject, {
+        itemIndex: index,
+        message: `TikTok API error: ${(error as Error).message}. Refresh also failed.`,
+      });
     }
   }
 
@@ -288,14 +326,19 @@ export async function execute(
     const errorMsg =
       initResponse.error.message || JSON.stringify(initResponse.error);
     if (errorCode !== "ok") {
-      throw new Error(`TikTok API error [${errorCode}]: ${errorMsg}`);
+      throw new NodeApiError(this.getNode(), initResponse as JsonObject, {
+        itemIndex: index,
+        message: `TikTok API error [${errorCode}]: ${errorMsg}`,
+      });
     }
   }
 
   // If response doesn't have expected structure, show what we got
   if (!initResponse.data && !initResponse.error) {
-    throw new Error(
+    throw new NodeOperationError(
+      this.getNode(),
       `Unexpected TikTok response: ${JSON.stringify(initResponse)}`,
+      { itemIndex: index },
     );
   }
 
@@ -304,39 +347,59 @@ export async function execute(
 
   // Upload video file to TikTok
   if (!uploadUrl) {
-    throw new Error("No upload URL returned from TikTok");
+    throw new NodeOperationError(
+      this.getNode(),
+      "No upload URL returned from TikTok",
+      { itemIndex: index },
+    );
   }
 
   if (!videoBuffer) {
-    throw new Error("No video data to upload");
+    throw new NodeOperationError(this.getNode(), "No video data to upload", {
+      itemIndex: index,
+    });
   }
 
   // Upload the video file
-  const uploadResponse = await this.helpers.httpRequest({
-    method: "PUT",
-    url: uploadUrl,
-    body: videoBuffer,
-    headers: {
-      "Content-Type": "video/mp4",
-      "Content-Range": `bytes 0-${videoBuffer.length - 1}/${videoBuffer.length}`,
-    },
-    returnFullResponse: true,
-    ignoreHttpStatusErrors: true,
-  });
+  let uploadResponse: any;
+  try {
+    uploadResponse = await this.helpers.httpRequest({
+      method: "PUT",
+      url: uploadUrl,
+      body: videoBuffer,
+      headers: {
+        "Content-Type": "video/mp4",
+        "Content-Range": `bytes 0-${videoBuffer.length - 1}/${videoBuffer.length}`,
+      },
+      returnFullResponse: true,
+      ignoreHttpStatusErrors: true,
+    });
+  } catch (error) {
+    throw new NodeApiError(this.getNode(), error as JsonObject, {
+      itemIndex: index,
+    });
+  }
 
   // Check upload status using the status endpoint
-  const statusResponse = await this.helpers.httpRequest({
-    method: "POST",
-    url: `${baseUrl}/v2/post/publish/status/fetch/`,
-    body: { publish_id: publishId },
-    json: true,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    returnFullResponse: true,
-    ignoreHttpStatusErrors: true,
-  });
+  let statusResponse: any;
+  try {
+    statusResponse = await this.helpers.httpRequest({
+      method: "POST",
+      url: `${baseUrl}/v2/post/publish/status/fetch/`,
+      body: { publish_id: publishId },
+      json: true,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      returnFullResponse: true,
+      ignoreHttpStatusErrors: true,
+    });
+  } catch (error) {
+    throw new NodeApiError(this.getNode(), error as JsonObject, {
+      itemIndex: index,
+    });
+  }
 
   const statusData = statusResponse.body || statusResponse;
 
