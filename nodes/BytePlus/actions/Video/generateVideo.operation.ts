@@ -219,13 +219,6 @@ export const description: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Max Wait Time (Seconds)',
-				name: 'maxWaitTime',
-				type: 'number',
-				default: 300,
-				description: 'Maximum time to wait for video generation (in seconds)',
-			},
-			{
 				displayName: 'Poll Interval (Seconds)',
 				name: 'pollInterval',
 				type: 'number',
@@ -287,7 +280,6 @@ export async function execute(
 
 	const duration = Math.min(maxDuration, Math.max(minDuration, Math.round(durationRaw)));
 
-	const maxWaitTime = (additionalOptions.maxWaitTime as number) || 300;
 	const pollInterval = (additionalOptions.pollInterval as number) || 2;
 
 	const baseUrl = credentials.baseUrl as string;
@@ -347,12 +339,11 @@ export async function execute(
 		throw new Error('No task_id returned from video generation API');
 	}
 
-	// Step 2: Poll for task completion
+	// Step 2: Poll for task completion indefinitely until video is ready
 	const pollUrl = `${baseUrl}${videoEndpoint}/${taskId}`;
 	const startTime = Date.now();
-	const deadline = startTime + maxWaitTime * 1000;
 
-	while (Date.now() < deadline) {
+	while (true) {
 		const pollOptions = {
 			method: 'GET' as IHttpRequestMethods,
 			url: pollUrl,
@@ -404,9 +395,4 @@ export async function execute(
 		// Wait before next poll
 		await sleep(pollInterval * 1000);
 	}
-
-	// Timeout reached
-	throw new Error(
-		`Video generation timed out after ${maxWaitTime} seconds. Task ID: ${taskId}`,
-	);
 }
