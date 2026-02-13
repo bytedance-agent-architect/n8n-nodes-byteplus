@@ -202,11 +202,11 @@ export async function execute(
   let binaryData = {};
   if (imageUrl) {
     try {
-      const imageResponse = await this.helpers.request({
+      const imageResponse = await this.helpers.httpRequest({
         method: "GET",
         url: imageUrl,
-        encoding: null, // Returns Buffer
-        resolveWithFullResponse: true,
+        encoding: "arraybuffer",
+        returnFullResponse: true,
       });
 
       const contentType = imageResponse.headers["content-type"] || "image/png";
@@ -221,7 +221,7 @@ export async function execute(
       };
     } catch (error) {
       // If download fails, continue without binary data
-      console.error("Failed to download image:", error);
+      // Error is silently handled as binary data is optional
     }
   }
 

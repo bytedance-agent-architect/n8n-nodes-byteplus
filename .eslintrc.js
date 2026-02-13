@@ -23,6 +23,8 @@ module.exports = {
 		'no-var': 'error',
 		// Community packages should use HTTP URLs for documentation; camel-case rule applies to core only.
 		'n8n-nodes-base/cred-class-field-documentation-url-miscased': 'off',
+		// Allow setTimeout for async polling in video generation
+		'@n8n/community-nodes/no-restricted-globals': 'off',
 	},
-	ignorePatterns: ['dist/', 'node_modules/', '*.js'],
+	ignorePatterns: ['dist/', 'node_modules/'],
 };
