@@ -53,6 +53,7 @@ certs/*.cer
 
 # n8n specific
 .n8n/
+.n8n-local/
 
 # Claude Code
 .claude/

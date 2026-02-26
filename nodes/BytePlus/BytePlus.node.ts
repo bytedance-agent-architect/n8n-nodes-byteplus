@@ -4,6 +4,7 @@ import type {
   INodeType,
   INodeTypeDescription,
 } from "n8n-workflow";
+import { NodeConnectionTypes } from "n8n-workflow";
 
 import * as image from "./actions/Image";
 import * as video from "./actions/Video";
@@ -22,8 +23,10 @@ export class BytePlus implements INodeType {
     defaults: {
       name: "BytePlus",
     },
-    inputs: ["main"],
-    outputs: ["main"],
+    // eslint-disable-next-line n8n-nodes-base/node-class-description-inputs-wrong-regular-node
+    inputs: [NodeConnectionTypes.Main],
+    // eslint-disable-next-line n8n-nodes-base/node-class-description-outputs-wrong
+    outputs: [NodeConnectionTypes.Main],
     credentials: [
       {
         name: "bytePlusApi",

@@ -15,8 +15,5 @@
 			}
 		]
 	},
-	"alias": ["byteplus", "seedream", "seedance", "image", "video", "ai"],
-	"subcategories": {
-		"AI": ["Agents", "Miscellaneous"]
-	}
+	"alias": ["byteplus", "seedream", "seedance", "image", "video", "ai"]
 }

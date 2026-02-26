@@ -1,6 +1,6 @@
 # n8n-nodes-byteplus
 
-**n8n community node for BytePlus AI services** - Image Generation, Video Generation, Text Generation, and TikTok Publishing.
+**n8n community node for BytePlus AI services** - Image Generation, Video Generation, and Text Generation.
 
 ## Features
 
@@ -9,7 +9,6 @@
 | **Image Generation** | Generate images using Seedream models (2K, 1080p, 720p, 1024x1024) |
 | **Video Generation** | Create videos from text + reference images using Seedance |
 | **Text Generation** | Generate text responses using Seed LLM |
-| **TikTok Publishing** | Publish videos to TikTok (placeholder implementation) |
 
 ## Installation
 
@@ -73,22 +72,12 @@ Generate text responses using Seed LLM.
 - **Prompt** (required): Question or prompt text
 - **Model**: Model ID for specific Seed LLM models
 
-### TikTok Publishing
-
-Publish videos to TikTok (placeholder implementation).
-
-**Parameters:**
-- **Video URL** (required): URL of video to publish
-- **Caption**: Caption text for the post
-- **Hashtags**: Comma-separated hashtags
-- **Privacy Level**: public, friends, or private
-
 ## Local Development
 
 ### Prerequisites
 
 - Node.js >=18.0.0
-- Docker and Docker Compose
+- n8n installed locally (`npm install -g n8n` or use `npx`)
 
 ### Quick Start
 
@@ -106,14 +95,17 @@ Publish videos to TikTok (placeholder implementation).
 
 3. **Start n8n with the custom node:**
    ```bash
-   docker-compose up
+   N8N_CUSTOM_EXTENSIONS="/path/to/n8n-nodes-byteplus" npx n8n start
    ```
+   > **Note:** `npm run dev` only runs the TypeScript compiler in watch mode — it does not start n8n. You need to run n8n separately.
 
 4. **Access n8n:**
-   - Open http://localhost:5679
+   - Open http://localhost:5678
    - Create your workflow
    - Add BytePlus node from the nodes panel
    - Configure your BytePlus API credentials
+
+> **Port note:** n8n defaults to port 5678 for the editor UI. Port 5679 is used internally by the Task Broker — do not set `N8N_PORT=5679` as it will conflict.
 
 ### Development Commands
 
@@ -150,12 +142,10 @@ n8n-nodes-byteplus/
 │       └── actions/
 │           ├── Image/                # Image generation operations
 │           ├── Video/                # Video generation operations
-│           ├── Text/                 # Text generation operations
-│           └── Sharing/              # TikTok publishing operations
+│           └── Text/                 # Text generation operations
 ├── dist/                             # Built files (auto-generated)
 ├── package.json                      # Dependencies and scripts
-├── tsconfig.json                     # TypeScript configuration
-└── docker-compose.yml               # Development environment
+└── tsconfig.json                     # TypeScript configuration
 ```
 
 ## Security
@@ -178,8 +168,8 @@ n8n-nodes-byteplus/
 
 **Node not appearing in n8n:**
 - Ensure you built the project (`npm run build`)
-- Check docker-compose volumes are mounted correctly
-- Restart the n8n container
+- Verify `N8N_CUSTOM_EXTENSIONS` points to the correct path
+- Restart n8n after rebuilding
 
 **API authentication errors:**
 - Verify your BytePlus API key is correct

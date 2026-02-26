@@ -8,6 +8,9 @@ import type {
 } from "n8n-workflow";
 import { NodeApiError } from "n8n-workflow";
 
+const BASE_URL = "https://ark.ap-southeast.bytepluses.com";
+const IMAGE_GENERATION_ENDPOINT = "/api/v3/images/generations";
+
 function supportsStreamParameter(modelId: string): boolean {
   const match = modelId.match(/^seedream-(\d+)-/);
   if (!match) return false;
@@ -106,19 +109,6 @@ export const description: INodeProperties[] = [
     description: "Size of the generated image",
   },
   {
-    displayName: "Watermark",
-    name: "watermark",
-    type: "boolean",
-    default: true,
-    displayOptions: {
-      show: {
-        resource: ["image"],
-        operation: ["generateImage"],
-      },
-    },
-    description: "Whether to add a watermark to the generated image",
-  },
-  {
     displayName: "Additional Options",
     name: "additionalOptions",
     type: "collection",
@@ -142,6 +132,13 @@ export const description: INodeProperties[] = [
         default: "url",
         description: "Format of the returned image",
       },
+      {
+        displayName: "Watermark",
+        name: "watermark",
+        type: "boolean",
+        default: false,
+        description: "Whether to add a watermark to the generated image",
+      },
     ],
   },
 ];
@@ -150,13 +147,11 @@ export async function execute(
   this: IExecuteFunctions,
   index: number,
 ): Promise<INodeExecutionData> {
-  const credentials = await this.getCredentials("bytePlusApi");
   const prompt = this.getNodeParameter("prompt", index) as string;
   const inputImage = this.getNodeParameter("image", index, "") as string;
   const modelSelection = this.getNodeParameter("model", index) as string;
   const customModel = this.getNodeParameter("customModel", index, "") as string;
   const size = this.getNodeParameter("size", index) as string;
-  const watermark = this.getNodeParameter("watermark", index) as boolean;
   const additionalOptions = this.getNodeParameter(
     "additionalOptions",
     index,
@@ -167,15 +162,12 @@ export async function execute(
   // Resolve model: use custom if selected, otherwise use dropdown value.
   const model = modelSelection === "custom" ? customModel : modelSelection;
 
-  const baseUrl = credentials.baseUrl as string;
-  const imageEndpoint = credentials.imageEndpoint as string;
-
   const body: IDataObject = {
     model,
     prompt,
     response_format: additionalOptions.responseFormat || "url",
     size: size || "2K",
-    watermark,
+    watermark: (additionalOptions.watermark as boolean) ?? false,
   };
   if (supportsStreamParameter(model)) {
     body.stream = false;
@@ -186,7 +178,7 @@ export async function execute(
 
   const options = {
     method: "POST" as IHttpRequestMethods,
-    url: `${baseUrl}${imageEndpoint}`,
+    url: `${BASE_URL}${IMAGE_GENERATION_ENDPOINT}`,
     body,
     json: true,
   };

@@ -7,6 +7,9 @@ import type {
 } from "n8n-workflow";
 import { NodeApiError } from "n8n-workflow";
 
+const BASE_URL = "https://ark.ap-southeast.bytepluses.com";
+const CHAT_COMPLETIONS_ENDPOINT = "/api/v3/chat/completions";
+
 export const description: INodeProperties[] = [
   {
     displayName: "Model",
@@ -107,7 +110,6 @@ export async function execute(
   this: IExecuteFunctions,
   index: number,
 ): Promise<IDataObject> {
-  const credentials = await this.getCredentials("bytePlusApi");
   const prompt = this.getNodeParameter("prompt", index) as string;
   const modelSelection = this.getNodeParameter("model", index) as string;
   const customModel = this.getNodeParameter("customModel", index, "") as string;
@@ -119,9 +121,6 @@ export async function execute(
 
   // Resolve model: use custom if selected, otherwise use dropdown value
   const model = modelSelection === "custom" ? customModel : modelSelection;
-
-  const baseUrl = credentials.baseUrl as string;
-  const chatEndpoint = credentials.chatEndpoint as string;
 
   const systemMessage =
     (additionalOptions.systemMessage as string) ||
@@ -149,7 +148,7 @@ export async function execute(
 
   const options = {
     method: "POST" as IHttpRequestMethods,
-    url: `${baseUrl}${chatEndpoint}`,
+    url: `${BASE_URL}${CHAT_COMPLETIONS_ENDPOINT}`,
     body,
     json: true,
   };

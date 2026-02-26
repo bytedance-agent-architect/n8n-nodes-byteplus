@@ -21,35 +21,6 @@ export class BytePlusApi implements ICredentialType {
 			required: true,
 			description: 'Your BytePlus ModelArk API Key',
 		},
-		{
-			displayName: 'Base URL',
-			name: 'baseUrl',
-			type: 'string',
-			default: 'https://ark.ap-southeast.bytepluses.com',
-			required: true,
-			description: 'BytePlus API Base URL',
-		},
-		{
-			displayName: 'Image Generation Endpoint',
-			name: 'imageEndpoint',
-			type: 'string',
-			default: '/api/v3/images/generations',
-			description: 'Endpoint for Seedream image generation',
-		},
-		{
-			displayName: 'Video Generation Endpoint',
-			name: 'videoEndpoint',
-			type: 'string',
-			default: '/api/v3/contents/generations/tasks',
-			description: 'Endpoint for Seedance video generation',
-		},
-		{
-			displayName: 'Chat Completions Endpoint',
-			name: 'chatEndpoint',
-			type: 'string',
-			default: '/api/v3/chat/completions',
-			description: 'Endpoint for Seed chat/text completions',
-		},
 	];
 
 	authenticate: IAuthenticateGeneric = {
@@ -64,7 +35,7 @@ export class BytePlusApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: '={{$credentials.baseUrl}}',
+			baseURL: 'https://ark.ap-southeast.bytepluses.com',
 			url: '/api/v3/models',
 			method: 'GET',
 		},

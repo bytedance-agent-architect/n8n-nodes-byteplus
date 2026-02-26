@@ -7,6 +7,9 @@ import type {
 } from "n8n-workflow";
 import { NodeApiError, NodeOperationError, sleep } from "n8n-workflow";
 
+const BASE_URL = "https://ark.ap-southeast.bytepluses.com";
+const VIDEO_GENERATION_ENDPOINT = "/api/v3/contents/generations/tasks";
+
 export const description: INodeProperties[] = [
   {
     displayName: "Model",
@@ -200,19 +203,6 @@ export const description: INodeProperties[] = [
       "Whether to generate audio for the video (only available for Seedance 1.5 Pro)",
   },
   {
-    displayName: "Watermark",
-    name: "watermark",
-    type: "boolean",
-    default: true,
-    displayOptions: {
-      show: {
-        resource: ["video"],
-        operation: ["generateVideo"],
-      },
-    },
-    description: "Whether to overlay a watermark on the generated video",
-  },
-  {
     displayName: "Additional Options",
     name: "additionalOptions",
     type: "collection",
@@ -232,6 +222,13 @@ export const description: INodeProperties[] = [
         default: 2,
         description: "How often to check if the video is ready (in seconds)",
       },
+      {
+        displayName: "Watermark",
+        name: "watermark",
+        type: "boolean",
+        default: false,
+        description: "Whether to overlay a watermark on the generated video",
+      },
     ],
   },
 ];
@@ -240,7 +237,6 @@ export async function execute(
   this: IExecuteFunctions,
   index: number,
 ): Promise<IDataObject> {
-  const credentials = await this.getCredentials("bytePlusApi");
   const prompt = this.getNodeParameter("prompt", index) as string;
   const imageUrl = this.getNodeParameter("imageUrl", index) as string;
   const lastFrameImageUrl = this.getNodeParameter(
@@ -265,7 +261,6 @@ export async function execute(
     index,
     "16:9",
   ) as string;
-  const watermark = this.getNodeParameter("watermark", index, true) as boolean;
   const additionalOptions = this.getNodeParameter(
     "additionalOptions",
     index,
@@ -297,9 +292,6 @@ export async function execute(
   );
 
   const pollInterval = (additionalOptions.pollInterval as number) || 2;
-
-  const baseUrl = credentials.baseUrl as string;
-  const videoEndpoint = credentials.videoEndpoint as string;
 
   // Step 1: Create the video generation task
   const content: Array<{
@@ -340,7 +332,7 @@ export async function execute(
     content,
     resolution,
     ratio: aspectRatio,
-    watermark,
+    watermark: (additionalOptions.watermark as boolean) ?? false,
     duration,
   };
 
@@ -351,7 +343,7 @@ export async function execute(
 
   const createOptions = {
     method: "POST" as IHttpRequestMethods,
-    url: `${baseUrl}${videoEndpoint}`,
+    url: `${BASE_URL}${VIDEO_GENERATION_ENDPOINT}`,
     body: createBody,
     json: true,
   };
@@ -382,7 +374,7 @@ export async function execute(
   }
 
   // Step 2: Poll for task completion indefinitely until video is ready
-  const pollUrl = `${baseUrl}${videoEndpoint}/${taskId}`;
+  const pollUrl = `${BASE_URL}${VIDEO_GENERATION_ENDPOINT}/${taskId}`;
   const startTime = Date.now();
 
   for (;;) {
