@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-byteplus",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "n8n community node for BytePlus AI services (Image Generation, Video Generation, Text Generation)",
   "keywords": [
     "n8n-community-node-package",
